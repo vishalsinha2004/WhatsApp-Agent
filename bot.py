@@ -4,7 +4,7 @@ import pyperclip
 import google.generativeai as genai
 
 # Configure Gemini with your API key
-genai.configure(api_key="AIzaSyD0MJpiETfLw9nPkxdCEXlZn3i_usJ91Kw")
+genai.configure(api_key="")
 
 # Define function to check last sender
 def is_last_message_from_sender(chat_log, sender_name=""):
