@@ -1,31 +1,26 @@
 import google.generativeai as genai
+import os
+from dotenv import load_dotenv
 
-# Configure your Gemini API key
-genai.configure(api_key="AIzaSyD0MJpiETfLw9nPkxdCEXlZn3i_usJ91Kw")
+# Load environment variables with override to fix caching issues
+load_dotenv(override=True)
+api_key = os.getenv("GEMINI_API_KEY")
 
-# Instantiate the model
-model = genai.GenerativeModel('gemini-2.0-flash')
+if api_key:
+    genai.configure(api_key=api_key)
+    # Using the model version requested
+    model = genai.GenerativeModel('gemini-2.5-flash')
+else:
+    print("❌ ERROR: No API Key found.")
+    exit()
 
 # Chat history input
 command = '''
 [20:30, 12/6/2024] Person1: Can you suggest something I can code while listening?
 [20:30, 12/6/2024] Person2: https://www.youtube.com/watch?v=DzmG-4-OASQ
-[20:30, 12/6/2024] Person2: This one.
-[20:30, 12/6/2024] Person2: https://www.youtube.com/watch?v=DzmG-4-OASQ
-[20:31, 12/6/2024] Person1: This is in Hindi.
-[20:31, 12/6/2024] Person1: Send me some English songs.
-[20:31, 12/6/2024] Person1: But wait—
-[20:31, 12/6/2024] Person1: This song is amazing.
-[20:31, 12/6/2024] Person1: So I’ll stick to it.
-[20:31, 12/6/2024] Person1: Still, send me some English songs too.
-[20:31, 12/6/2024] Person2: Hold on.
-[20:31, 12/6/2024] Person1: I know what you're about to send. 😂😂
-[20:32, 12/6/2024] Person2: https://www.youtube.com/watch?v=ar-3chBG4NU
-This one is a Hindi-English mix, but it’s great.
-[20:33, 12/6/2024] Person1: Okay okay.
+... (rest of your chat history) ...
 [20:33, 12/6/2024] Person2: Yeah.
 '''
-
 
 # Prepare the prompt for the model
 prompt = (
