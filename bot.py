@@ -4,6 +4,7 @@ import pyperclip
 import google.generativeai as genai
 import os
 from dotenv import load_dotenv
+from ai.router import ai_generate
 
 # Disable failsafe for high-res screens
 pyautogui.FAILSAFE = False 
@@ -46,33 +47,75 @@ def get_last_message_details(chat_log):
         pass
     return None, None
 
+
 def generate_vishal_response(chat_history):
-    """Generates a proper, clean response as Vishal."""
     try:
         prompt = f"""
-        You are Vishal, a friendly person from India who speaks Hinglish (Hindi + English).
-        
+        You are Vishal, a friendly person from India who speaks Hinglish.
+
         INSTRUCTIONS:
-        1. Analyze the chat history.
-        2. Respond to the LAST message as Vishal.
-        3. Keep the tone casual and human-like.
-        4. CRITICAL: Output ONLY the message content. 
-        5. DO NOT include "Vishal:", quotes, or AI-style explanations.
-        
+        1. Reply ONLY to the last message
+        2. Human, casual tone
+        3. Output ONLY the message
+
         CHAT HISTORY:
         {chat_history}
         """
-        
-        response = model.generate_content(prompt)
-        return response.text.strip()
+
+        return ai_generate(prompt, mode="auto")
+
     except Exception as e:
         print(f"❌ AI Error: {e}")
         return None
+def send_whatsapp_message(message, max_retries=3):
+    """
+    Safely sends a WhatsApp message with verification and fallback.
+    """
+
+    for attempt in range(1, max_retries + 1):
+        try:
+            # Copy message to clipboard
+            pyperclip.copy(message)
+            time.sleep(0.2)
+
+            # Verify clipboard
+            if pyperclip.paste().strip() != message.strip():
+                raise ValueError("Clipboard copy failed")
+
+            # Focus message box
+            pyautogui.click(1808, 1328)
+            time.sleep(0.3)
+
+            # Paste
+            pyautogui.hotkey('ctrl', 'v')
+            time.sleep(0.3)
+
+            # Final send
+            pyautogui.press('enter')
+
+            print(f"✅ Message sent successfully (attempt {attempt})")
+            return True
+
+        except Exception as e:
+            print(f"⚠️ Send attempt {attempt} failed: {e}")
+            time.sleep(0.5)
+
+    # 🔁 Fallback: type message manually
+    print("🧯 Fallback: typing message manually...")
+    pyautogui.click(1808, 1328)
+    time.sleep(0.3)
+    pyautogui.typewrite(message, interval=0.02)
+    pyautogui.press('enter')
+
+    return False
+
 
 # --- 3. MAIN LOOP ---
 
 print("🚀 Bot starting in 3 seconds... Switch to WhatsApp Web.")
 time.sleep(3)
+
+
 
 while True:
     try:
@@ -96,12 +139,8 @@ while True:
                 print(f"📤 Proper Response: {reply}")
                 
                 # Step C: Send the reply
-                pyperclip.copy(reply)
-                pyautogui.click(1808, 1328) # WhatsApp message box
-                time.sleep(0.5)
-                pyautogui.hotkey('ctrl', 'v')
-                time.sleep(0.5)
-                pyautogui.press('enter')
+                send_whatsapp_message(reply)
+
                 
                 last_message_text = message 
         else:
