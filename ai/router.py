@@ -6,9 +6,8 @@ def ai_generate(prompt: str, mode="auto") -> str:
     mode:
     - fast  → Groq
     - smart → Gemini
-    - auto  → decides automatically
+    - auto  → decides based on length and presence of a question
     """
-
     try:
         if mode == "fast":
             return groq_generate(prompt)
@@ -17,13 +16,14 @@ def ai_generate(prompt: str, mode="auto") -> str:
             return gemini_generate(prompt)
 
         # AUTO MODE
-        if len(prompt) > 1500:
-            return gemini_generate(prompt)  # better reasoning
+        if "?" in prompt or len(prompt) > 1500:
+            # Questions or long prompts get the smarter model
+            return gemini_generate(prompt)
         else:
-            return groq_generate(prompt)    # faster
+            return groq_generate(prompt)
 
     except Exception as e:
-        # 🔁 Fallback system
+        # Fallback system
         try:
             return gemini_generate(prompt)
         except:
